@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life & Performance Dashboard | Tri-Athlete Mode</title>
-    <!-- Tailwind CSS CDN para estilização rápida e esportiva -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js para Gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Inter:wght@400;600;800&display=swap');
         
@@ -30,6 +28,15 @@
         .card-glow:hover {
             border-color: rgba(234, 88, 12, 0.4);
         }
+        .tab-btn-active {
+            background-color: #ea580c;
+            color: #ffffff;
+        }
+        .subtab-btn-active {
+            border-bottom: 2px solid #ea580c;
+            color: #ea580c;
+            font-weight: 700;
+        }
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
@@ -48,16 +55,16 @@
 </head>
 <body class="pb-12">
 
-    <!-- NAV BAR / HEADER -->
-    <header class="border-b border-gray-800 bg-gray-950/80 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+    <!-- HEADER -->
+    <header class="border-b border-gray-800 bg-gray-950/90 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-orange-600 p-2 rounded-lg text-white font-bold">
                     <i class="fa-solid fa-bolt text-2xl"></i>
                 </div>
                 <div>
                     <h1 class="text-3xl font-sport font-bold uppercase tracking-wider text-white leading-none">PULSE <span class="text-orange-500">KPI</span></h1>
-                    <p class="text-xs text-gray-400">Personal Performance & Triathlon System</p>
+                    <p class="text-xs text-gray-400">Personal Performance System</p>
                 </div>
             </div>
             
@@ -69,252 +76,327 @@
                 </div>
             </div>
         </div>
+
+        <!-- MENU PRINCIPAL -->
+        <nav class="max-w-7xl mx-auto px-4 flex gap-2 mt-2">
+            <button onclick="switchTab('treinos')" id="nav-treinos" class="tab-btn px-5 py-2.5 rounded-t-xl font-bold text-sm text-gray-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-dumbbell"></i> Treinos
+            </button>
+            <button onclick="switchTab('financeiro')" id="nav-financeiro" class="tab-btn px-5 py-2.5 rounded-t-xl font-bold text-sm text-gray-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-wallet"></i> Financeiro
+            </button>
+            <button onclick="switchTab('rotina')" id="nav-rotina" class="tab-btn px-5 py-2.5 rounded-t-xl font-bold text-sm text-gray-400 hover:text-white transition flex items-center gap-2">
+                <i class="fa-solid fa-house-user"></i> Rotina de Casa
+            </button>
+        </nav>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="max-w-7xl mx-auto px-4 mt-6">
 
-        <!-- LADO ESQUERDO: RECOMENDAÇÃO INTELIGENTE + METAS DIÁRIAS (1 Coluna) -->
-        <div class="space-y-6">
+        <!-- ==================== TAB: TREINOS ==================== -->
+        <div id="tab-treinos" class="tab-content space-y-6">
 
-            <!-- ASSISTENTE INTELIGENTE DE TREINO / DIA -->
-            <div class="card-glow rounded-2xl p-5 border-l-4 border-l-orange-500">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-brain text-orange-500"></i>
-                        Sugestão Inteligente do Dia
-                    </h2>
-                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded font-mono">IA Local</span>
-                </div>
-                <div id="aiRecommendation" class="text-sm text-gray-300 leading-relaxed bg-gray-900/50 p-4 rounded-xl border border-gray-800">
-                    Carregando plano inteligente do dia...
-                </div>
+            <!-- SUB-NAVEGAÇÃO: MUSCULAÇÃO VS TRIATHLON -->
+            <div class="flex border-b border-gray-800 gap-6">
+                <button onclick="switchSubTab('musculacao')" id="subnav-musculacao" class="subtab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-white transition flex items-center gap-2">
+                    <i class="fa-solid fa-weight-hanging"></i> Musculação (ABC)
+                </button>
+                <button onclick="switchSubTab('triathlon')" id="subnav-triathlon" class="subtab-btn pb-3 text-sm font-semibold text-gray-400 hover:text-white transition flex items-center gap-2">
+                    <i class="fa-solid fa-person-triathlon"></i> Triathlon (Endurance)
+                </button>
             </div>
 
-            <!-- TAREFAS DIÁRIAS (CHECKLIST) -->
-            <div class="card-glow rounded-2xl p-5">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-emerald-500"></i>
-                    Rotina & Tarefas Diárias
-                </h2>
-                <div class="space-y-3" id="dailyTasks">
-                    <label class="flex items-center gap-3 bg-gray-900/40 p-3 rounded-xl border border-gray-800/60 cursor-pointer hover:bg-gray-800/40 transition">
-                        <input type="checkbox" onchange="toggleTask('trash')" id="task_trash" class="w-5 h-5 accent-orange-500 rounded">
-                        <span class="text-sm">Tirar o Lixo</span>
-                    </label>
-                    <label class="flex items-center gap-3 bg-gray-900/40 p-3 rounded-xl border border-gray-800/60 cursor-pointer hover:bg-gray-800/40 transition">
-                        <input type="checkbox" onchange="toggleTask('dishes')" id="task_dishes" class="w-5 h-5 accent-orange-500 rounded">
-                        <span class="text-sm">Lavar a Louça</span>
-                    </label>
-                    <label class="flex items-center gap-3 bg-gray-900/40 p-3 rounded-xl border border-gray-800/60 cursor-pointer hover:bg-gray-800/40 transition">
-                        <input type="checkbox" onchange="toggleTask('house')" id="task_house" class="w-5 h-5 accent-orange-500 rounded">
-                        <span class="text-sm">Organizar a Casa</span>
-                    </label>
-                    <label class="flex items-center gap-3 bg-gray-900/40 p-3 rounded-xl border border-gray-800/60 cursor-pointer hover:bg-gray-800/40 transition">
-                        <input type="checkbox" onchange="toggleTask('reading')" id="task_reading" class="w-5 h-5 accent-orange-500 rounded">
-                        <span class="text-sm">Leitura (Mínimo 4 Páginas)</span>
-                    </label>
+            <!-- SUB-TAB: MUSCULAÇÃO -->
+            <div id="subtab-musculacao" class="subtab-content space-y-6">
+
+                <!-- INTELIGÊNCIA DE SUGESTÃO DE TREINO ABC -->
+                <div class="card-glow rounded-2xl p-5 border-l-4 border-l-orange-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-base font-bold flex items-center gap-2 text-orange-400">
+                            <i class="fa-solid fa-brain"></i> Sugestão do Próximo Treino
+                        </h2>
+                        <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded font-mono">Rotação ABC</span>
+                    </div>
+                    <div id="nextWorkoutRecommendation" class="text-sm text-gray-300">
+                        Carregando recomendação de treino...
+                    </div>
                 </div>
+
+                <!-- CARDS DE TREINO A, B, C -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- TREINO A -->
+                    <div id="card-workout-A" class="card-glow rounded-2xl p-5 border-t-4 border-t-red-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-2xl font-sport font-bold text-red-500">TREINO A</span>
+                                <span id="badge-last-A" class="hidden text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded uppercase font-bold">Último Feito</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-white mb-1">Hyrox + Pernas + Abdômen</h3>
+                            <p class="text-xs text-gray-400 mb-4">Treino focado em resistência cardiovascular (Hyrox), força de membros inferiores e abdômen.</p>
+                        </div>
+                        <button onclick="logMusculacao('A')" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl text-xs transition uppercase">
+                            <i class="fa-solid fa-check mr-1"></i> Registrar Treino A
+                        </button>
+                    </div>
+
+                    <!-- TREINO B -->
+                    <div id="card-workout-B" class="card-glow rounded-2xl p-5 border-t-4 border-t-blue-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-2xl font-sport font-bold text-blue-500">TREINO B</span>
+                                <span id="badge-last-B" class="hidden text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded uppercase font-bold">Último Feito</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-white mb-1">Costas e Bíceps</h3>
+                            <p class="text-xs text-gray-400 mb-4">Foco na puxada, remadas, grande dorsal e hipertrofia de bíceps com progressão de carga.</p>
+                        </div>
+                        <button onclick="logMusculacao('B')" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-xs transition uppercase">
+                            <i class="fa-solid fa-check mr-1"></i> Registrar Treino B
+                        </button>
+                    </div>
+
+                    <!-- TREINO C -->
+                    <div id="card-workout-C" class="card-glow rounded-2xl p-5 border-t-4 border-t-emerald-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-2xl font-sport font-bold text-emerald-500">TREINO C</span>
+                                <span id="badge-last-C" class="hidden text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded uppercase font-bold">Último Feito</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-white mb-1">Peito, Tríceps e Ombros</h3>
+                            <p class="text-xs text-gray-400 mb-4">Empurrar horizontal e vertical (Supinos, Desenvolvimentos) e isolados de tríceps.</p>
+                        </div>
+                        <button onclick="logMusculacao('C')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition uppercase">
+                            <i class="fa-solid fa-check mr-1"></i> Registrar Treino C
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- CICLO DE 10 DIAS + DESCANSO -->
+                <div class="card-glow rounded-2xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <h3 class="font-bold text-base text-gray-200">Ciclo de Treino contínuo (10 dias seguidos = 1 descanso total)</h3>
+                            <p class="text-xs text-gray-400">Meta: A cada 10 dias acumulados de treino de musculação, tirar 1 dia para descanso total.</p>
+                        </div>
+                        <span class="text-3xl font-sport font-bold text-orange-500" id="muscDayTxt">Dia 0/10</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden mb-3">
+                        <div id="muscBar" class="bg-orange-500 h-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-400">Último Treino Registrado: <strong id="lastWorkoutName" class="text-orange-400">Nenhum</strong></span>
+                        <button onclick="logRestDay()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 transition">
+                            <i class="fa-solid fa-bed mr-1"></i> Registrar Dia de Descanso Total
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- MICRO CURSO / CONHECIMENTO GERAL -->
-            <div class="card-glow rounded-2xl p-5">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-bold flex items-center gap-2">
-                        <i class="fa-solid fa-graduation-cap text-purple-400"></i>
-                        Sugestão de Estudo / Conhecimento
-                    </h2>
-                    <button onclick="generateCourseTopic()" class="text-xs bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 px-2 py-1 rounded transition">
-                        <i class="fa-solid fa-arrows-rotate"></i> Gerar
-                    </button>
-                </div>
-                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
-                    <p class="text-xs text-purple-400 font-semibold uppercase mb-1">Tópico recomendado para hoje:</p>
-                    <h3 id="courseTopicTitle" class="font-bold text-gray-100 text-base mb-1">--</h3>
-                    <p id="courseTopicDesc" class="text-xs text-gray-400">Clique em gerar para receber um tema de inteligência/conhecimentos gerais.</p>
+            <!-- SUB-TAB: TRIATHLON -->
+            <div id="subtab-triathlon" class="subtab-content space-y-6 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- NATAÇÃO -->
+                    <div class="card-glow rounded-2xl p-5 border-t-2 border-t-cyan-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-base flex items-center gap-2">
+                                        <i class="fa-solid fa-person-swimming text-cyan-400"></i> Natação
+                                    </h3>
+                                    <p class="text-xs text-gray-400">2x/semana (Mínimo: <span id="swimMetaTxt" class="text-cyan-300 font-bold">800m</span>)</p>
+                                </div>
+                                <span class="text-2xl font-sport font-bold text-cyan-400" id="swimCountTxt">0/10</span>
+                            </div>
+                            <p class="text-xs text-gray-400 my-4">A cada 10 treinos concluídos, a distância meta progride automaticamente em +10%.</p>
+                        </div>
+                        <button onclick="logWorkout('natacao')" class="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/30 font-semibold py-2.5 rounded-xl text-xs transition">
+                            + Registrar Treino Natação
+                        </button>
+                    </div>
+
+                    <!-- BIKE -->
+                    <div class="card-glow rounded-2xl p-5 border-t-2 border-t-emerald-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-base flex items-center gap-2">
+                                        <i class="fa-solid fa-person-biking text-emerald-400"></i> Ciclismo (Bike)
+                                    </h3>
+                                    <p class="text-xs text-gray-400">2x/semana (Meta: <span id="bikeMetaTxt" class="text-emerald-300 font-bold">25 km</span>)</p>
+                                </div>
+                                <span class="text-2xl font-sport font-bold text-emerald-400" id="bikeCountTxt">0/10</span>
+                            </div>
+                            <p class="text-xs text-gray-400 my-4">Progresso continuo a cada 10 treinos de rodagem.</p>
+                        </div>
+                        <button onclick="logWorkout('bike')" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 font-semibold py-2.5 rounded-xl text-xs transition">
+                            + Registrar Treino Bike
+                        </button>
+                    </div>
+
+                    <!-- CORRIDA -->
+                    <div class="card-glow rounded-2xl p-5 border-t-2 border-t-orange-500 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-bold text-base flex items-center gap-2">
+                                        <i class="fa-solid fa-person-running text-orange-400"></i> Corrida
+                                    </h3>
+                                    <p class="text-xs text-gray-400">2x/semana (Leve 5km / Longão <span id="runLongMetaTxt">10km</span>)</p>
+                                </div>
+                                <span class="text-2xl font-sport font-bold text-orange-400" id="runCountTxt">0/10</span>
+                            </div>
+                            <p class="text-xs text-gray-400 my-4">Intercale um treino leve de rodagem com um treino longo na semana.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="logWorkout('corrida_curta')" class="bg-orange-600/20 hover:bg-orange-600/40 text-orange-300 border border-orange-500/30 font-semibold py-2 rounded-xl text-xs transition">
+                                + Leve (5k)
+                            </button>
+                            <button onclick="logWorkout('corrida_longa')" class="bg-orange-600/20 hover:bg-orange-600/40 text-orange-300 border border-orange-500/30 font-semibold py-2 rounded-xl text-xs transition">
+                                + Longão (10k+)
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
         </div>
 
-        <!-- PAINEL CENTRAL E DIREITA: ESPORTES, DIETA E FINANÇAS (2 Colunas) -->
-        <div class="lg:col-span-2 space-y-6">
+        <!-- ==================== TAB: FINANCEIRO ==================== -->
+        <div id="tab-financeiro" class="tab-content space-y-6 hidden">
+            
+            <div class="card-glow rounded-2xl p-6 border-t-2 border-t-green-500">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold flex items-center gap-2 text-white">
+                            <i class="fa-solid fa-wallet text-green-400"></i>
+                            Patrimônio & Investimentos
+                        </h2>
+                        <p class="text-xs text-gray-400">Aporte mínimo obrigatório por mês: <span class="text-green-400 font-bold">R$ 500,00</span></p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-gray-400 uppercase">Patrimônio Acumulado</span>
+                        <div class="text-3xl font-sport font-bold text-green-400" id="financeCurrent">R$ 11.392,46</div>
+                    </div>
+                </div>
 
-            <!-- MACROS E NUTRIÇÃO DIÁRIA -->
-            <div class="card-glow rounded-2xl p-5">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-utensils text-yellow-500"></i>
-                    Nutrição Diária (Metas: 140g Prot | Máx 2000 Kal)
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- Proteína -->
+                <!-- BARRA DE PROGRESSO META 50K -->
+                <div class="mb-6 bg-gray-900/60 p-4 rounded-xl border border-gray-800">
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-gray-300">Meta do Patrimônio: <strong>R$ 50.000,00</strong></span>
+                        <span id="financePercent" class="text-green-400 font-bold">22.7%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 h-4 rounded-full overflow-hidden">
+                        <div id="financeBar" class="bg-green-500 h-full transition-all duration-500" style="width: 22.7%"></div>
+                    </div>
+                </div>
+
+                <!-- REGISTRAR APORTE -->
+                <div class="flex gap-2 max-w-md mb-8">
+                    <input type="number" id="inputAporte" placeholder="Valor do aporte (R$)" class="bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5 text-sm w-full focus:outline-none focus:border-green-500">
+                    <button onclick="addAporte()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition shrink-0">
+                        + Aportar
+                    </button>
+                </div>
+
+                <!-- CONTAS MENSAIS OBRIGATÓRIAS -->
+                <h3 class="font-bold text-base text-gray-200 mb-3">Checklist de Contas Mensais Obrigatórias:</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs" id="billsContainer">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TAB: ROTINA DE CASA & DIETA ==================== -->
+        <div id="tab-rotina" class="tab-content space-y-6 hidden">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- TAREFAS DIÁRIAS DA CASA + LEITURA -->
+                <div class="card-glow rounded-2xl p-5 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-emerald-400">
+                        <i class="fa-solid fa-list-check"></i>
+                        Tarefas Diárias & Hábitos
+                    </h2>
+                    <div class="space-y-3" id="dailyTasks">
+                        <label class="flex items-center gap-3 bg-gray-900/50 p-3.5 rounded-xl border border-gray-800 cursor-pointer hover:bg-gray-800/40 transition">
+                            <input type="checkbox" onchange="toggleTask('trash')" id="task_trash" class="w-5 h-5 accent-orange-500 rounded">
+                            <span class="text-sm">Tirar o Lixo</span>
+                        </label>
+                        <label class="flex items-center gap-3 bg-gray-900/50 p-3.5 rounded-xl border border-gray-800 cursor-pointer hover:bg-gray-800/40 transition">
+                            <input type="checkbox" onchange="toggleTask('dishes')" id="task_dishes" class="w-5 h-5 accent-orange-500 rounded">
+                            <span class="text-sm">Lavar a Louça</span>
+                        </label>
+                        <label class="flex items-center gap-3 bg-gray-900/50 p-3.5 rounded-xl border border-gray-800 cursor-pointer hover:bg-gray-800/40 transition">
+                            <input type="checkbox" onchange="toggleTask('house')" id="task_house" class="w-5 h-5 accent-orange-500 rounded">
+                            <span class="text-sm">Organizar a Casa</span>
+                        </label>
+                        <label class="flex items-center gap-3 bg-gray-900/50 p-3.5 rounded-xl border border-gray-800 cursor-pointer hover:bg-gray-800/40 transition">
+                            <input type="checkbox" onchange="toggleTask('reading')" id="task_reading" class="w-5 h-5 accent-orange-500 rounded">
+                            <span class="text-sm">Leitura de Livro (Mínimo 4 Páginas completas)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- DIETA E MACROS -->
+                <div class="card-glow rounded-2xl p-5 space-y-4">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-500">
+                        <i class="fa-solid fa-utensils"></i>
+                        Dieta Diária (Contagem de Macros)
+                    </h2>
+
+                    <!-- Proteínas -->
                     <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800">
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-400">Proteínas</span>
+                            <span class="text-gray-400">Proteínas (Meta: 140g)</span>
                             <span class="font-bold text-orange-400" id="proteinTxt">0 / 140 g</span>
                         </div>
                         <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
                             <div id="proteinBar" class="bg-orange-500 h-full transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
+
                     <!-- Calorias -->
                     <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800">
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-400">Calorias Consumidas</span>
+                            <span class="text-gray-400">Calorias (Máximo: 2000 kcal)</span>
                             <span class="font-bold text-yellow-400" id="calTxt">0 / 2000 kcal</span>
                         </div>
                         <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
                             <div id="calBar" class="bg-yellow-500 h-full transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Input Rápido Nutrição -->
-                <div class="flex gap-2">
-                    <input type="number" id="inputCal" placeholder="Calorias (kcal)" class="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-orange-500">
-                    <input type="number" id="inputProt" placeholder="Proteína (g)" class="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-orange-500">
-                    <button onclick="addNutrition()" class="bg-orange-600 hover:bg-orange-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shrink-0">
-                        Adicionar
-                    </button>
-                    <button onclick="resetNutrition()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-2 rounded-lg text-sm transition shrink-0" title="Zerar Hoje">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- PROGRESSÃO DE TREINOS (TRIATHLON + MUSCULAÇÃO) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                <!-- MUSCULAÇÃO (Ciclo de 10 dias) -->
-                <div class="card-glow rounded-2xl p-5 border-t-2 border-t-red-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i class="fa-solid fa-dumbbell text-red-500"></i> Musculação
-                            </h3>
-                            <p class="text-xs text-gray-400">Ciclo de 10 dias (Dia 11 = Descanso)</p>
-                        </div>
-                        <span class="text-2xl font-sport font-bold text-red-400" id="muscDayTxt">Dia 0/10</span>
-                    </div>
-
-                    <div class="my-3 bg-gray-900/50 p-3 rounded-xl">
-                        <div class="flex justify-between text-xs text-gray-400 mb-1">
-                            <span>Progresso do Ciclo</span>
-                            <span id="muscPercent">0%</span>
-                        </div>
-                        <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                            <div id="muscBar" class="bg-red-500 h-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-
+                    <!-- Inputs -->
                     <div class="flex gap-2">
-                        <button onclick="logWorkout('musculacao')" class="w-full bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/30 font-semibold py-2 rounded-lg text-xs transition">
-                            + Reg. Treino Concluído
-                        </button>
-                    </div>
-                </div>
-
-                <!-- NATAÇÃO (2x/sem, +10% a cada 10 treinos) -->
-                <div class="card-glow rounded-2xl p-5 border-t-2 border-t-cyan-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i class="fa-solid fa-person-swimming text-cyan-400"></i> Natação
-                            </h3>
-                            <p class="text-xs text-gray-400">Meta atual por treino: <span id="swimMetaTxt" class="text-cyan-300 font-bold">800m</span></p>
-                        </div>
-                        <span class="text-2xl font-sport font-bold text-cyan-400" id="swimCountTxt">0/10</span>
-                    </div>
-
-                    <p class="text-xs text-gray-400 mb-3">Concluídos para próxima progressão (+10% dist.)</p>
-
-                    <button onclick="logWorkout('natacao')" class="w-full bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/30 font-semibold py-2 rounded-lg text-xs transition">
-                        + Reg. Treino Natação
-                    </button>
-                </div>
-
-                <!-- BIKE (2x/sem 25km+) -->
-                <div class="card-glow rounded-2xl p-5 border-t-2 border-t-emerald-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i class="fa-solid fa-person-biking text-emerald-400"></i> Ciclismo (Bike)
-                            </h3>
-                            <p class="text-xs text-gray-400">Meta atual: <span id="bikeMetaTxt" class="text-emerald-300 font-bold">25 km</span></p>
-                        </div>
-                        <span class="text-2xl font-sport font-bold text-emerald-400" id="bikeCountTxt">0/10</span>
-                    </div>
-
-                    <p class="text-xs text-gray-400 mb-3">Concluídos para próxima progressão de distância</p>
-
-                    <button onclick="logWorkout('bike')" class="w-full bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30 font-semibold py-2 rounded-lg text-xs transition">
-                        + Reg. Treino Bike
-                    </button>
-                </div>
-
-                <!-- CORRIDA (Leve 5km / Longo 10km+) -->
-                <div class="card-glow rounded-2xl p-5 border-t-2 border-t-orange-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-bold text-base flex items-center gap-2">
-                                <i class="fa-solid fa-person-running text-orange-400"></i> Corrida
-                            </h3>
-                            <p class="text-xs text-gray-400">Metas: Leve (5km) / Longão (<span id="runLongMetaTxt">10km</span>)</p>
-                        </div>
-                        <span class="text-2xl font-sport font-bold text-orange-400" id="runCountTxt">0/10</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 mt-3">
-                        <button onclick="logWorkout('corrida_curta')" class="bg-orange-600/20 hover:bg-orange-600/40 text-orange-300 border border-orange-500/30 font-semibold py-2 rounded-lg text-xs transition">
-                            + Treino Leve (5k)
-                        </button>
-                        <button onclick="logWorkout('corrida_longa')" class="bg-orange-600/20 hover:bg-orange-600/40 text-orange-300 border border-orange-500/30 font-semibold py-2 rounded-lg text-xs transition">
-                            + Longão (10k+)
+                        <input type="number" id="inputCal" placeholder="Calorias (kcal)" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm w-full focus:outline-none focus:border-yellow-500">
+                        <input type="number" id="inputProt" placeholder="Proteína (g)" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-sm w-full focus:outline-none focus:border-yellow-500">
+                        <button onclick="addNutrition()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition shrink-0">
+                            + Add
                         </button>
                     </div>
                 </div>
 
             </div>
 
-            <!-- VIDA FINANCEIRA & PATRIMÔNIO -->
-            <div class="card-glow rounded-2xl p-5 border-t-2 border-t-green-500">
-                <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                    <div>
-                        <h2 class="text-lg font-bold flex items-center gap-2">
-                            <i class="fa-solid fa-wallet text-green-400"></i>
-                            Patrimônio e Metas Financeiras
-                        </h2>
-                        <p class="text-xs text-gray-400">Aporte mínimo mensal: <span class="text-green-400 font-bold">R$ 500,00</span></p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-xs text-gray-400 uppercase">Patrimônio Acumulado</span>
-                        <div class="text-2xl font-sport font-bold text-green-400" id="financeCurrent">R$ 11.392,46</div>
-                    </div>
-                </div>
-
-                <!-- Barra de Progresso Meta 50k -->
-                <div class="mb-5 bg-gray-900/60 p-4 rounded-xl border border-gray-800">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span>Meta Final: <strong>R$ 50.000,00</strong></span>
-                        <span id="financePercent" class="text-green-400 font-bold">22.7%</span>
-                    </div>
-                    <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
-                        <div id="financeBar" class="bg-green-500 h-full transition-all duration-500" style="width: 22.7%"></div>
-                    </div>
-                </div>
-
-                <!-- Adicionar Aporte -->
-                <div class="flex gap-2 mb-6">
-                    <input type="number" id="inputAporte" placeholder="Valor do novo aporte (R$)" class="bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:border-green-500">
-                    <button onclick="addAporte()" class="bg-green-600 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shrink-0">
-                        + Registrar Aporte
+            <!-- MINI-CURSO E ESTUDOS -->
+            <div class="card-glow rounded-2xl p-5">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-bold flex items-center gap-2 text-purple-400">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        Conhecimentos Gerais (Mini-Curso / Estudo do Dia)
+                    </h2>
+                    <button onclick="generateCourseTopic()" class="text-xs bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 px-3 py-1.5 rounded-lg transition">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Gerar Novo Tema
                     </button>
                 </div>
-
-                <!-- Checklist Contas Obrigatórias do Mês -->
-                <h3 class="font-bold text-sm text-gray-300 mb-2">Checklist de Contas Obrigatórias (Mensal):</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs" id="billsContainer">
-                    <!-- Gerado via JS -->
+                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
+                    <h3 id="courseTopicTitle" class="font-bold text-gray-100 text-base mb-1">Princípios do Treinamento de Endurance</h3>
+                    <p id="courseTopicDesc" class="text-xs text-gray-400 leading-relaxed">Pesquise sobre VO2 Máximo, Limiar de Lactato e como a Zona 2 melhora sua eficiência metabólica no Triathlon.</p>
                 </div>
             </div>
 
@@ -322,15 +404,18 @@
 
     </div>
 
-    <!-- SCRIPT DE INTELIGÊNCIA E LÓGICA DO APP -->
+    <!-- SCRIPT DA APLICAÇÃO -->
     <script>
-        // ESTADO DA APLICAÇÃO (Salvo no LocalStorage)
+        // ESTADO PADRÃO DADOS
         const defaultState = {
             finance: 11392.46,
             financeGoal: 50000,
             nutrition: { calories: 0, protein: 0 },
             workouts: {
-                musculacao: { dayInCycle: 1, totalCompleted: 0 },
+                musculacao: { 
+                    dayInCycle: 0, 
+                    lastWorkout: null // 'A', 'B' ou 'C'
+                },
                 natacao: { count: 0, distance: 800 },
                 bike: { count: 0, distance: 25 },
                 corrida: { count: 0, longDistance: 10 }
@@ -354,35 +439,33 @@
             }
         };
 
-        let appData = JSON.parse(localStorage.getItem('pulse_kpi_data')) || defaultState;
+        let appData = JSON.parse(localStorage.getItem('pulse_kpi_v2_data')) || defaultState;
 
-        // Tópicos de Conhecimentos Gerais para Mini-Cursos
         const courseTopics = [
             { title: "Princípios do Treinamento de Endurance", desc: "Pesquise sobre VO2 Máximo, Limiar de Lactato e como a Zona 2 melhora sua eficiência metabólica no Triathlon." },
-            { title: "Finanças e Alocação de Ativos", desc: "Pesquise a diferença entre Renda Fixa (CDB/Tesouro) e Fundos Imobiliários (FIIs) para aportes mensais." },
-            { title: "Psicologia Estóica e Foco", desc: "Pesquise os princípios de Sêneca e Marco Aurélio sobre disciplina diária e resiliência." },
-            { title: "Nutrição e Síntese Proteica", desc: "Pesquise como o fracionamento de proteínas ao longo do dia otimiza a recuperação muscular." },
-            { title: "Arquitetura da Mente & Produtividade", desc: "Pesquise sobre a técnica 'Time-Blocking' para organizar trabalho, treino e vida pessoal." },
-            { title: "Geopolítica e Economia Global", desc: "Pesquise o impacto das taxas de juros mundiais no seu poder de compra e investimentos." }
+            { title: "Finanças e Alocação de Ativos", desc: "Pesquise a diferença entre Renda Fixa (CDB/Tesouro) e Fundos Imobiliários (FIIs) para seus aportes." },
+            { title: "Psicologia Estóica e Foco", desc: "Pesquise os princípios de Sêneca e Marco Aurélio sobre disciplina diária e controle mental em provas esportivas." },
+            { title: "Nutrição e Síntese Proteica", desc: "Pesquise como o fracionamento das 140g de proteína ao longo do dia otimiza a recuperação da musculação." },
+            { title: "Técnica de Ciclismo e Cadência", desc: "Pesquise sobre manter a cadência entre 85-95 RPM no pedal para economizar perna para a corrida no Triathlon." }
         ];
 
         // INICIALIZAÇÃO
         document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('currentDate').innerText = new Date().toLocaleDateString('pt-BR');
+            switchTab('treinos');
+            switchSubTab('musculacao');
             checkDateReset();
             updateUI();
-            generateAIRecommendation();
         });
 
         function saveData() {
-            localStorage.setItem('pulse_kpi_data', JSON.stringify(appData));
+            localStorage.setItem('pulse_kpi_v2_data', JSON.stringify(appData));
             updateUI();
         }
 
         function checkDateReset() {
             const today = new Date().toLocaleDateString();
             if (appData.dailyTasks.lastDate !== today) {
-                // Reseta tarefas diárias e nutrição a cada novo dia
                 appData.dailyTasks.trash = false;
                 appData.dailyTasks.dishes = false;
                 appData.dailyTasks.house = false;
@@ -393,106 +476,134 @@
             }
         }
 
-        function updateUI() {
-            // Nutrição
-            document.getElementById('proteinTxt').innerText = `${appData.nutrition.protein} / 140 g`;
-            document.getElementById('proteinBar').style.width = `${Math.min(100, (appData.nutrition.protein / 140) * 100)}%`;
-            
-            document.getElementById('calTxt').innerText = `${appData.nutrition.calories} / 2000 kcal`;
-            document.getElementById('calBar').style.width = `${Math.min(100, (appData.nutrition.calories / 2000) * 100)}%`;
+        // NAVEGAÇÃO ENTRE TABS
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('tab-btn-active'));
 
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).classList.add('tab-btn-active');
+        }
+
+        function switchSubTab(subTabName) {
+            document.querySelectorAll('.subtab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.subtab-btn').forEach(el => el.classList.remove('subtab-btn-active'));
+
+            document.getElementById(`subtab-${subTabName}`).classList.remove('hidden');
+            document.getElementById(`subnav-${subTabName}`).classList.add('subtab-btn-active');
+        }
+
+        // MUSCULAÇÃO ABC LOGIC
+        function logMusculacao(type) {
+            const last = appData.workouts.musculacao.lastWorkout;
+
+            if (last === type) {
+                alert(`⚠️ Atenção: Seu último treino foi o Treino ${type}! Para não repetir o mesmo treino 2 vezes seguidas, faça um treino diferente (ex: ${type === 'A' ? 'B ou C' : type === 'B' ? 'C ou A' : 'A ou B'}).`);
+                return;
+            }
+
+            appData.workouts.musculacao.lastWorkout = type;
+            appData.workouts.musculacao.dayInCycle += 1;
+
+            if (appData.workouts.musculacao.dayInCycle >= 10) {
+                alert("🎉 Você completou 10 dias de treino na sequência! Lembre-se de reservar o dia de amanhã para descanso total!");
+            }
+
+            saveData();
+        }
+
+        function logRestDay() {
+            appData.workouts.musculacao.dayInCycle = 0;
+            saveData();
+            alert("Dia de descanso total registrado. O ciclo de 10 dias foi reiniciado!");
+        }
+
+        function updateUI() {
             // Musculação
             const muscDay = appData.workouts.musculacao.dayInCycle;
-            document.getElementById('muscDayTxt').innerText = muscDay > 10 ? "DIA DE DESCANSO" : `Dia ${muscDay}/10`;
-            document.getElementById('muscPercent').innerText = `${Math.min(100, (muscDay / 10) * 100)}%`;
-            document.getElementById('muscBar').style.width = `${Math.min(100, (muscDay / 10) * 100)}%`;
+            const lastW = appData.workouts.musculacao.lastWorkout;
 
-            // Natação
+            document.getElementById('muscDayTxt').innerText = `Dia ${muscDay}/10`;
+            document.getElementById('muscBar').style.width = `${Math.min(100, (muscDay / 10) * 100)}%`;
+            document.getElementById('lastWorkoutName').innerText = lastW ? `Treino ${lastW}` : "Nenhum";
+
+            // Badges no Card
+            ['A', 'B', 'C'].forEach(t => {
+                const badge = document.getElementById(`badge-last-${t}`);
+                if (lastW === t) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+
+            // Recomendação Inteligente
+            const recEl = document.getElementById('nextWorkoutRecommendation');
+            if (!lastW) {
+                recEl.innerHTML = "Inicie a sua rotação fazendo o <strong>Treino A (Hyrox + Pernas + Abdômen)</strong>.";
+            } else if (lastW === 'A') {
+                recEl.innerHTML = "O último treino foi o <strong>A</strong>. Recomendado para hoje: <strong class='text-blue-400'>Treino B (Costas e Bíceps)</strong>.";
+            } else if (lastW === 'B') {
+                recEl.innerHTML = "O último treino foi o <strong>B</strong>. Recomendado para hoje: <strong class='text-emerald-400'>Treino C (Peito, Tríceps e Ombros)</strong>.";
+            } else if (lastW === 'C') {
+                recEl.innerHTML = "O último treino foi o <strong>C</strong>. Recomendado para hoje: <strong class='text-red-400'>Treino A (Hyrox + Pernas + Abdômen)</strong>.";
+            }
+
+            // Triathlon
             document.getElementById('swimMetaTxt').innerText = `${appData.workouts.natacao.distance}m`;
             document.getElementById('swimCountTxt').innerText = `${appData.workouts.natacao.count}/10`;
-
-            // Bike
             document.getElementById('bikeMetaTxt').innerText = `${appData.workouts.bike.distance} km`;
             document.getElementById('bikeCountTxt').innerText = `${appData.workouts.bike.count}/10`;
-
-            // Corrida
             document.getElementById('runLongMetaTxt').innerText = `${appData.workouts.corrida.longDistance}km`;
             document.getElementById('runCountTxt').innerText = `${appData.workouts.corrida.count}/10`;
 
-            // Finanças
+            // Financeiro
             document.getElementById('financeCurrent').innerText = `R$ ${appData.finance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             const finPercent = ((appData.finance / appData.financeGoal) * 100).toFixed(1);
             document.getElementById('financePercent').innerText = `${finPercent}%`;
             document.getElementById('financeBar').style.width = `${Math.min(100, finPercent)}%`;
+            renderBills();
+
+            // Nutrição
+            document.getElementById('proteinTxt').innerText = `${appData.nutrition.protein} / 140 g`;
+            document.getElementById('proteinBar').style.width = `${Math.min(100, (appData.nutrition.protein / 140) * 100)}%`;
+            document.getElementById('calTxt').innerText = `${appData.nutrition.calories} / 2000 kcal`;
+            document.getElementById('calBar').style.width = `${Math.min(100, (appData.nutrition.calories / 2000) * 100)}%`;
 
             // Tasks
             document.getElementById('task_trash').checked = appData.dailyTasks.trash;
             document.getElementById('task_dishes').checked = appData.dailyTasks.dishes;
             document.getElementById('task_house').checked = appData.dailyTasks.house;
             document.getElementById('task_reading').checked = appData.dailyTasks.reading;
-
-            // Contas Mensais
-            renderBills();
         }
 
-        // NUTRIÇÃO
-        function addNutrition() {
-            const cal = parseInt(document.getElementById('inputCal').value) || 0;
-            const prot = parseInt(document.getElementById('inputProt').value) || 0;
-            appData.nutrition.calories += cal;
-            appData.nutrition.protein += prot;
-            document.getElementById('inputCal').value = '';
-            document.getElementById('inputProt').value = '';
-            saveData();
-        }
-
-        function resetNutrition() {
-            appData.nutrition = { calories: 0, protein: 0 };
-            saveData();
-        }
-
-        // REGISTRO DE TREINOS COM PROGRESSÃO AUTOMÁTICA
+        // OUTROS MÉTODOS
         function logWorkout(type) {
-            if (type === 'musculacao') {
-                if (appData.workouts.musculacao.dayInCycle >= 10) {
-                    appData.workouts.musculacao.dayInCycle = 1; // Reinicia ciclo após o descanso
-                    alert("Ciclo de 10 dias concluído! Dia de descanso realizado. Iniciando novo ciclo de carga.");
-                } else {
-                    appData.workouts.musculacao.dayInCycle += 1;
-                }
-            } else if (type === 'natacao') {
+            if (type === 'natacao') {
                 appData.workouts.natacao.count += 1;
                 if (appData.workouts.natacao.count >= 10) {
-                    appData.workouts.natacao.distance = Math.round(appData.workouts.natacao.distance * 1.1); // +10%
+                    appData.workouts.natacao.distance = Math.round(appData.workouts.natacao.distance * 1.1);
                     appData.workouts.natacao.count = 0;
-                    alert(`Incrível! 10 treinos de natação concluídos. Sua nova meta de distância é ${appData.workouts.natacao.distance}m por treino (+10%).`);
+                    alert(`Meta batida! Nova meta de natação: ${appData.workouts.natacao.distance}m.`);
                 }
             } else if (type === 'bike') {
                 appData.workouts.bike.count += 1;
                 if (appData.workouts.bike.count >= 10) {
-                    appData.workouts.bike.distance += 2.5; // +2.5km a cada 10 treinos
+                    appData.workouts.bike.distance += 2.5;
                     appData.workouts.bike.count = 0;
-                    alert(`Parabéns! 10 treinos de Bike concluídos. Sua nova meta é de ${appData.workouts.bike.distance}km.`);
+                    alert(`Meta batida! Nova meta de bike: ${appData.workouts.bike.distance}km.`);
                 }
             } else if (type === 'corrida_curta' || type === 'corrida_longa') {
                 appData.workouts.corrida.count += 1;
                 if (appData.workouts.corrida.count >= 10) {
-                    appData.workouts.corrida.longDistance += 1; // +1km no longão
+                    appData.workouts.corrida.longDistance += 1;
                     appData.workouts.corrida.count = 0;
-                    alert(`Evolução em corrida! 10 treinos acumulados. Meta do Longão aumentada para ${appData.workouts.corrida.longDistance}km.`);
+                    alert(`Meta batida! Nova meta de longão: ${appData.workouts.corrida.longDistance}km.`);
                 }
             }
             saveData();
-            generateAIRecommendation();
         }
 
-        // TAREFAS DIÁRIAS
-        function toggleTask(task) {
-            appData.dailyTasks[task] = !appData.dailyTasks[task];
-            saveData();
-        }
-
-        // FINANÇAS
         function addAporte() {
             const val = parseFloat(document.getElementById('inputAporte').value) || 0;
             if (val > 0) {
@@ -508,44 +619,34 @@
             for (let bill in appData.bills) {
                 const isPaid = appData.bills[bill];
                 const div = document.createElement('div');
-                div.className = `p-2 rounded-lg border flex items-center justify-between cursor-pointer transition ${isPaid ? 'bg-green-950/40 border-green-700/50 text-green-300' : 'bg-gray-900/40 border-gray-800 text-gray-400'}`;
-                div.onclick = () => toggleBill(bill);
+                div.className = `p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${isPaid ? 'bg-green-950/40 border-green-700/50 text-green-300' : 'bg-gray-900/40 border-gray-800 text-gray-400'}`;
+                div.onclick = () => {
+                    appData.bills[bill] = !appData.bills[bill];
+                    saveData();
+                };
                 div.innerHTML = `
-                    <span>${bill}</span>
+                    <span class="font-medium">${bill}</span>
                     <i class="fa-solid ${isPaid ? 'fa-circle-check text-green-400' : 'fa-circle text-gray-600'}"></i>
                 `;
                 container.appendChild(div);
             }
         }
 
-        function toggleBill(bill) {
-            appData.bills[bill] = !appData.bills[bill];
+        function toggleTask(task) {
+            appData.dailyTasks[task] = !appData.dailyTasks[task];
             saveData();
         }
 
-        // INTELIGÊNCIA LOCAL DE RECOMENDAÇÃO DE TREINO
-        function generateAIRecommendation() {
-            const dayText = document.getElementById('aiRecommendation');
-            const muscDay = appData.workouts.musculacao.dayInCycle;
-
-            let rec = "";
-
-            if (muscDay === 10) {
-                rec = "🔥 **Atenção:** Hoje é o 10º dia do ciclo de Musculação. Amanhã será seu DIA DE DESCANSO TOTAL. Capriche na hidratação, garanta as 140g de proteína e prepare o corpo para regenerar.";
-            } else if (muscDay === 1) {
-                rec = "💪 **Novo Ciclo de Musculação Iniciado:** Avalie aumentar levemente a carga nos exercícios principais (1 a 2kg a mais). Hoje é ideal para combinar Musculação + Treino Leve de Corrida (5km).";
-            } else if (muscDay % 3 === 0) {
-                rec = "🏊 **Foco em Cardio (Triathlon):** Dia ideal para encaixar seu Treino de Natação (" + appData.workouts.natacao.distance + "m). Mantenha ritmo constante e trabalhe a respiração bilateral.";
-            } else if (muscDay % 2 === 0) {
-                rec = "🚴 **Dia de Ciclismo:** Sugestão de treino de Bike de " + appData.workouts.bike.distance + "km. Foco em cadência (85-95 RPM). Combine com o consumo ideal de carboidratos após o treino.";
-            } else {
-                rec = "🏃 **Treino de Corrida / Musculação:** Dia de focar na força muscular e realizar um Longão de Corrida (" + appData.workouts.corrida.longDistance + "km). Não se esqueça de bater a meta de 4 páginas de leitura hoje!";
-            }
-
-            dayText.innerHTML = rec;
+        function addNutrition() {
+            const cal = parseInt(document.getElementById('inputCal').value) || 0;
+            const prot = parseInt(document.getElementById('inputProt').value) || 0;
+            appData.nutrition.calories += cal;
+            appData.nutrition.protein += prot;
+            document.getElementById('inputCal').value = '';
+            document.getElementById('inputProt').value = '';
+            saveData();
         }
 
-        // GERADOR DE TÓPICOS DE CURSO
         function generateCourseTopic() {
             const randomIndex = Math.floor(Math.random() * courseTopics.length);
             const topic = courseTopics[randomIndex];
@@ -554,8 +655,8 @@
         }
 
         function resetData() {
-            if (confirm("Deseja realmente resetar todos os dados salvos para o padrão inicial?")) {
-                localStorage.removeItem('pulse_kpi_data');
+            if (confirm("Deseja realmente resetar os dados salvos para a configuração padrão?")) {
+                localStorage.removeItem('pulse_kpi_v2_data');
                 location.reload();
             }
         }
