@@ -415,12 +415,17 @@
                     </div>
                 </div>
 
-                <!-- DIETA E MACROS -->
+                <!-- DIETA E MACROS COM HISTÓRICO AUTOMÁTICO -->
                 <div class="card-glow rounded-2xl p-5 space-y-4">
-                    <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-500">
-                        <i class="fa-solid fa-utensils"></i>
-                        Dieta Diária (Contagem de Macros)
-                    </h2>
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-500">
+                            <i class="fa-solid fa-utensils"></i>
+                            Dieta Diária (Contagem de Macros)
+                        </h2>
+                        <button onclick="saveNutritionDayManual()" class="text-xs bg-yellow-600/20 hover:bg-yellow-600/40 text-yellow-300 border border-yellow-500/30 px-3 py-1 rounded-lg transition" title="Salvar macros acumulados de hoje no histórico">
+                            <i class="fa-solid fa-bookmark mr-1"></i> Salvar no Histórico
+                        </button>
+                    </div>
 
                     <!-- Proteínas -->
                     <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800">
@@ -451,6 +456,17 @@
                         <button onclick="addNutrition()" class="bg-yellow-600 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition shrink-0">
                             + Add
                         </button>
+                    </div>
+
+                    <!-- HISTÓRICO DE NUTRIÇÃO DOS DIAS ANTERIORES -->
+                    <div class="pt-3 border-t border-gray-800 space-y-2">
+                        <h4 class="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center justify-between">
+                            <span><i class="fa-solid fa-clock-rotate-left mr-1"></i> Histórico Diário de Macros</span>
+                            <span class="text-[10px] text-gray-500 font-normal">Salvo automaticamente ao mudar de dia</span>
+                        </h4>
+                        <div id="list-history-nutrition" class="space-y-1.5 text-xs text-gray-300 max-h-48 overflow-y-auto pr-1">
+                            <!-- JS Inject -->
+                        </div>
                     </div>
                 </div>
 
@@ -484,7 +500,11 @@
         const defaultState = {
             finance: 11392.46,
             financeGoal: 50000,
-            nutrition: { calories: 0, protein: 0 },
+            nutrition: { 
+                calories: 0, 
+                protein: 0,
+                history: [] // { date: "15/09", calories: 1850, protein: 135 }
+            },
             workouts: {
                 musculacao: { 
                     dayInCycle: 0, 
@@ -492,9 +512,9 @@
                     countA: 0,
                     countB: 0,
                     countC: 0,
-                    history: [] // { date, type, loadKg }
+                    history: []
                 },
-                natacao: { count: 0, distance: 800, history: [] }, // { date, distance, target, diffPercent }
+                natacao: { count: 0, distance: 800, history: [] },
                 bike: { count: 0, distance: 25, history: [] },
                 corrida: { count: 0, longDistance: 10, history: [] }
             },
@@ -503,7 +523,7 @@
                 dishes: false,
                 house: false,
                 reading: false,
-                lastDate: new Date().toLocaleDateString()
+                lastDate: new Date().toLocaleDateString('pt-BR')
             },
             bills: {
                 "Escola Filhos": false,
@@ -517,9 +537,10 @@
             }
         };
 
-        let appData = JSON.parse(localStorage.getItem('pulse_kpi_v4_data')) || defaultState;
+        let appData = JSON.parse(localStorage.getItem('pulse_kpi_v5_data')) || defaultState;
 
         // Garantir arrays de histórico
+        if (!appData.nutrition.history) appData.nutrition.history = [];
         if (!appData.workouts.musculacao.history) appData.workouts.musculacao.history = [];
         if (!appData.workouts.natacao.history) appData.workouts.natacao.history = [];
         if (!appData.workouts.bike.history) appData.workouts.bike.history = [];
@@ -539,24 +560,61 @@
             switchSubTab('musculacao');
             checkDateReset();
             updateUI();
+
+            // Checagem periódica a cada 1 minuto para salvar ao virar o dia
+            setInterval(checkDateReset, 60000);
         });
 
         function saveData() {
-            localStorage.setItem('pulse_kpi_v4_data', JSON.stringify(appData));
+            localStorage.setItem('pulse_kpi_v5_data', JSON.stringify(appData));
             updateUI();
         }
 
+        // VERIFICAÇÃO E VIRADA AUTOMÁTICA DO DIA (SALVA NUTRIÇÃO NO HISTÓRICO)
         function checkDateReset() {
-            const today = new Date().toLocaleDateString();
+            const today = new Date().toLocaleDateString('pt-BR');
             if (appData.dailyTasks.lastDate !== today) {
+                // Se havia consumo registrado no dia que passou, salva no histórico
+                if (appData.nutrition.calories > 0 || appData.nutrition.protein > 0) {
+                    saveNutritionToHistory(appData.dailyTasks.lastDate, appData.nutrition.calories, appData.nutrition.protein);
+                }
+
+                // Reseta as tarefas do dia e os macros diários
                 appData.dailyTasks.trash = false;
                 appData.dailyTasks.dishes = false;
                 appData.dailyTasks.house = false;
                 appData.dailyTasks.reading = false;
                 appData.dailyTasks.lastDate = today;
-                appData.nutrition = { calories: 0, protein: 0 };
+                appData.nutrition.calories = 0;
+                appData.nutrition.protein = 0;
                 saveData();
             }
+        }
+
+        function saveNutritionToHistory(dateStr, calories, protein) {
+            // Formata data para DD/MM
+            let formattedDate = dateStr;
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                formattedDate = `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}`;
+            }
+
+            // Remove entrada antiga do mesmo dia se já existir (para atualizar se for salvo manualmente)
+            appData.nutrition.history = appData.nutrition.history.filter(item => item.date !== formattedDate);
+
+            // Adiciona no topo do histórico
+            appData.nutrition.history.unshift({
+                date: formattedDate,
+                calories: calories,
+                protein: protein
+            });
+        }
+
+        function saveNutritionDayManual() {
+            const today = new Date().toLocaleDateString('pt-BR');
+            saveNutritionToHistory(today, appData.nutrition.calories, appData.nutrition.protein);
+            saveData();
+            alert(`Macros de hoje registrados no histórico: ${appData.nutrition.calories}kcal e ${appData.nutrition.protein}g de proteína.`);
         }
 
         function switchTab(tabName) {
@@ -599,7 +657,6 @@
             appData.workouts.musculacao.lastWorkout = type;
             appData.workouts.musculacao.dayInCycle += 1;
 
-            // Salvar no histórico
             appData.workouts.musculacao.history.unshift({
                 date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
                 type: type,
@@ -619,7 +676,7 @@
             alert("Dia de descanso registrado! Ciclo reiniciado.");
         }
 
-        // REGISTRAR TRIATHLON COM DISTÂNCIA E PORCENTAGEM DE PERFORMANCE
+        // REGISTRAR TRIATHLON
         function logTriathlon(type, event) {
             if (event) event.stopPropagation();
 
@@ -647,7 +704,6 @@
 
             appData.workouts[key].count += 1;
 
-            // Histórico
             appData.workouts[key].history.unshift({
                 date: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
                 dist: dist,
@@ -656,7 +712,6 @@
                 diffPercent: parseFloat(diffPercent)
             });
 
-            // Progressão de meta a cada 10 treinos
             if (appData.workouts[key].count >= 10) {
                 if (key === 'natacao') appData.workouts.natacao.distance = Math.round(appData.workouts.natacao.distance * 1.1);
                 if (key === 'bike') appData.workouts.bike.distance += 2.5;
@@ -668,14 +723,13 @@
             saveData();
         }
 
-        // MOSTRAR/OCULTAR HISTÓRICOS
         function toggleHistory(id) {
             const el = document.getElementById(`history-${id}`);
             if (el) el.classList.toggle('hidden');
         }
 
         function toggleCardHistory(id, event) {
-            if (event.target.tagName === 'BUTTON') return; // Evita acionar ao clicar nos botões
+            if (event.target.tagName === 'BUTTON') return;
             toggleHistory(id);
         }
 
@@ -718,7 +772,7 @@
                 recEl.innerHTML = options.length ? `Opção(ões) para o dia: ${options.join(' ou ')}.` : "Finalize o ciclo.";
             }
 
-            // Renderizar Histórico de Musculação
+            // Histórico Musculação
             const muscHistoryEl = document.getElementById('list-history-musculacao');
             muscHistoryEl.innerHTML = '';
             const recentMusc = appData.workouts.musculacao.history.slice(0, 5);
@@ -745,7 +799,6 @@
             document.getElementById('runLongMetaTxt').innerText = `${appData.workouts.corrida.longDistance}km`;
             document.getElementById('runCountTxt').innerText = `${appData.workouts.corrida.count}/10`;
 
-            // Renderizar Históricos do Triathlon
             renderTriathlonHistory('natacao');
             renderTriathlonHistory('bike');
             renderTriathlonHistory('corrida');
@@ -757,17 +810,52 @@
             document.getElementById('financeBar').style.width = `${Math.min(100, finPercent)}%`;
             renderBills();
 
-            // Nutrição
+            // Nutrição UI
             document.getElementById('proteinTxt').innerText = `${appData.nutrition.protein} / 140 g`;
             document.getElementById('proteinBar').style.width = `${Math.min(100, (appData.nutrition.protein / 140) * 100)}%`;
             document.getElementById('calTxt').innerText = `${appData.nutrition.calories} / 2000 kcal`;
             document.getElementById('calBar').style.width = `${Math.min(100, (appData.nutrition.calories / 2000) * 100)}%`;
+
+            renderNutritionHistory();
 
             // Tasks
             document.getElementById('task_trash').checked = appData.dailyTasks.trash;
             document.getElementById('task_dishes').checked = appData.dailyTasks.dishes;
             document.getElementById('task_house').checked = appData.dailyTasks.house;
             document.getElementById('task_reading').checked = appData.dailyTasks.reading;
+        }
+
+        function renderNutritionHistory() {
+            const container = document.getElementById('list-history-nutrition');
+            container.innerHTML = '';
+
+            const history = appData.nutrition.history.slice(0, 10);
+
+            if (history.length === 0) {
+                container.innerHTML = '<span class="text-gray-500 italic text-[11px]">Nenhum dia salvo no histórico.</span>';
+                return;
+            }
+
+            history.forEach(item => {
+                const protOk = item.protein >= 140;
+                const calOk = item.calories <= 2000;
+                const targetGoalOk = protOk && calOk;
+
+                const badgeColor = targetGoalOk 
+                    ? 'text-emerald-400 bg-emerald-950/40 border-emerald-800/40' 
+                    : 'text-yellow-400 bg-yellow-950/40 border-yellow-800/40';
+
+                const div = document.createElement('div');
+                div.className = `flex justify-between items-center p-2 rounded bg-gray-900/60 border border-gray-800 text-xs`;
+                div.innerHTML = `
+                    <span class="font-semibold text-gray-300">${item.date}:</span>
+                    <span class="font-mono text-gray-200">${item.calories}kal - ${item.protein}g de proteína</span>
+                    <span class="px-1.5 py-0.5 rounded border text-[10px] ${badgeColor} font-bold">
+                        ${targetGoalOk ? 'META BATTIDA' : 'PARCIAL'}
+                    </span>
+                `;
+                container.appendChild(div);
+            });
         }
 
         function renderTriathlonHistory(key) {
@@ -848,7 +936,7 @@
 
         function resetData() {
             if (confirm("Deseja realmente resetar os dados salvos para a configuração padrão?")) {
-                localStorage.removeItem('pulse_kpi_v4_data');
+                localStorage.removeItem('pulse_kpi_v5_data');
                 location.reload();
             }
         }
